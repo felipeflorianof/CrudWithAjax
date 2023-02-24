@@ -38,11 +38,11 @@ class EmployeeController extends Controller
         $output = '';
         if($emps->count() > 0)
         {
-            $output .= '<table class="table table-striped table-sm text-center align-middle">
+            $output .= '<table class="table table-striped table-sm text-center align-middle" id="empForm">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="select-all"></th>
                         <th>Id</th>
-                      
                         <th>Name</th>
                         <th>Email</th>
                         <th>Post</th>
@@ -55,6 +55,7 @@ class EmployeeController extends Controller
             {
                 $output .= 
                 '<tr>
+                    <td><input type="checkbox" name="emp[]" value="' . $emp->id . '"></td>
                     <td>'.$emp->id.'</td>
                     <td>'.$emp->first_name.' '.$emp->last_name.'</td>
                     <td>'.$emp->email.'</td>
@@ -67,7 +68,7 @@ class EmployeeController extends Controller
                     </td>
                 </tr>';
             }
-            $output .= '</tbody></table';
+            $output .= '</tbody><button type="button" class="btn btn-danger" id="deleteSelected" style="margin-bottom: 10px;">Delete Selected</button></table';
             echo $output;
         } else{
             echo '<h1 class="text-center text-secondary my-5">No record present in the database</h1>';
@@ -75,16 +76,16 @@ class EmployeeController extends Controller
     }
 
     // handle edit employee ajax request
-     public function edit(Request $request)
-     {
-         $id = $request->id;
-         $emp = Employee::find($id);
-         return response()->json($emp);
-     }
+    public function edit(Request $request)
+    {
+        $id = $request->id;
+        $emp = Employee::find($id);
+        return response()->json($emp);
+    }
 
     // handle update employee with ajax request
-     public function update(Request $request)
-     {
+    public function update(Request $request)
+    {
         
         $emp = Employee::find($request->emp_id);
     
@@ -100,13 +101,23 @@ class EmployeeController extends Controller
         return response()->json([
             'status' => 200
         ]);
-     }
+    }
 
-     // handle delete employee with ajax request
-     public function delete(Request $request)
-     {
+    // handle delete employee with ajax request
+    public function delete(Request $request)
+    {
         $id = $request->id;
         $emp = Employee::find($id);
         Employee::destroy($id);
-     }
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        $ids = $request->input('emp');
+        Employee::whereIn('id', $ids)->delete();
+        
+        return response()->json([
+            'status' => 200
+        ]);
+    }
 }

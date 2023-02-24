@@ -186,6 +186,53 @@
 
       });
 
+      // delete multiple data using ajax request
+      $(document).on('click', '#select-all', function(e) {
+        if ($(this).is(':checked')) {
+          $('input[name="emp[]"]').prop('checked', true);
+        }
+        else {
+          $('input[name="emp[]"]').prop('checked', false);
+        }
+      });
+
+       $(document).on('click', '#deleteSelected', function(e) {
+        e.preventDefault();
+        let ids = [];
+       // iterate over selected checkboxes to get IDs of selected records
+       $('input[name="emp[]"]:checked').each(function () {
+          ids.push($(this).val());
+       });
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              $.ajax({
+                url: '{{ route('deleteSelected') }}',
+                method: 'post',
+                data: {
+                  emp: ids,
+                  _token : '{{ csrf_token() }}'
+                },
+                success: function(res) {
+                  Swal.fire(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                  ) 
+                  fetchAllEmployees();
+                }
+              })
+            }
+          });
+      });
+
       // update employee using ajax
       $("#edit_employee_form").submit(function(e){
         e.preventDefault();

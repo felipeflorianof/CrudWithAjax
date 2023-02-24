@@ -9,3 +9,4 @@ Route::get('/fetch-all', [EmployeeController::class, 'fetchAll'])->name('fetchAl
 Route::get('/edit', [EmployeeController::class, 'edit'])->name('edit');
 Route::post('/update', [EmployeeController::class, 'update'])->name('update');
 Route::post('/delete', [EmployeeController::class, 'delete'])->name('delete');
+Route::post('/deleteSelected', [EmployeeController::class, 'deleteSelected'])->name('deleteSelected');
