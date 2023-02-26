@@ -31,48 +31,13 @@ class EmployeeController extends Controller
         ]);
     }
 
-    // handle fetch all data using ajax request
+    // Responsible for fetching all the employee records from the database and returning them in JSON format.
     public function fetchAll()
     {
         $emps = Employee::all();
-        $output = '';
-        if($emps->count() > 0)
-        {
-            $output .= '<table class="table table-striped table-sm text-center align-middle" id="empForm">
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="select-all"></th>
-                        <th>Id</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Post</th>
-                        <th>Phone</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>';
-            foreach( $emps as $emp) 
-            {
-                $output .= 
-                '<tr>
-                    <td><input type="checkbox" name="emp[]" value="' . $emp->id . '"></td>
-                    <td>'.$emp->id.'</td>
-                    <td>'.$emp->first_name.' '.$emp->last_name.'</td>
-                    <td>'.$emp->email.'</td>
-                    <td>'.$emp->post.'</td>
-                    <td>'.$emp->phone.'</td>
-                    <td>
-                    <a href="#" id="'.$emp->id.'" class="editIcon" data-bs-toggle="modal" data-bs-target="#editEmployeeModal"><i class="bi-pencil-square h4"></i></a>
-
-                    <a href="#" id="'.$emp->id.'" class="text-danger mx-1 deleteIcon" ><i class="bi-trash h4"></i></a>
-                    </td>
-                </tr>';
-            }
-            $output .= '</tbody><button type="button" class="btn btn-danger" id="deleteSelected" style="margin-bottom: 10px;">Delete Selected</button></table';
-            echo $output;
-        } else{
-            echo '<h1 class="text-center text-secondary my-5">No record present in the database</h1>';
-        }
+        return response()->json([
+            'emps' => $emps,
+        ]);
     }
 
     // handle edit employee ajax request
@@ -111,6 +76,7 @@ class EmployeeController extends Controller
         Employee::destroy($id);
     }
 
+    // handle the multiple delete with ajax
     public function deleteSelected(Request $request)
     {
         $ids = $request->input('emp');

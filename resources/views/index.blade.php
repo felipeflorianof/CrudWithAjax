@@ -5,14 +5,50 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crud with Ajax</title>
-
+    
     <!-- !important -->
 
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.11.3/datatables.min.css"/>
+  <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.11.3/datatables.min.js"></script>
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css' />
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css' />
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.10.25/datatables.min.css" />
+
 </head>
 <body>
+
+{{-- Table --}}
+
+<div class="container py-5">
+    <div class="row my-5">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-danger d-flex justify-content-between align-items-center">
+                    <h3 class="text-light">Manage Employees</h3>
+                    <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addEmployeeModal"><i class="bi-plus-circle me-2"></i>Add New Employee</button>
+                </div>
+                <div class="card-body" id="show_all_employees">
+                    <table class="table table-bordered datatable" data-search="true">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="select-all"></th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>E-mail</th>
+                                <th>Job position</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody><button type="button" class="btn btn-danger" id="deleteSelected" style="margin-bottom: 10px;">Delete Selected</button>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- End Table --}}
 
 {{-- add new employee modal start --}}
 <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -106,25 +142,7 @@
 </div>
 {{-- edit employee modal end --}}
 
-  <div class="container">
-    <div class="row my-5">
-      <div class="col-lg-12">
-        <div class="card shadow">
-          <div class="card-header bg-danger d-flex justify-content-between align-items-center">
-            <h3 class="text-light">Manage Employees</h3>
-            <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addEmployeeModal"><i
-                class="bi-plus-circle me-2"></i>Add New Employee</button>
-          </div>
-          <div class="card-body" id="show_all_employees">
-            <h1 class="text-center text-secondary my-5">Loading...</h1>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
     <!-- !important -->
-
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/js/bootstrap.bundle.min.js'></script>
     <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.10.25/datatables.min.js"></script>
@@ -132,28 +150,58 @@
 
     <script>
 
-      // fetch all data using ajax request
-      fetchAllEmployees();
+  fetchAllEmployees();
 
-      function fetchAllEmployees() {
-        $.ajax({
-          url: '{{ route('fetchAll') }}',
-          method: 'get',
-          success: function(res) {
-            $("#show_all_employees").html(res);
-            $("table").DataTable({
-              order: [0, 'desc'],
-              paging: true
-            });
-          }
+  // Inicialize a variável da tabela fora do escopo da função fetchAllEmployees()
+    var table;
+
+    $(document).ready(function() {
+        // Inicialize a tabela DataTable
+        table = $('.datatable').DataTable({
+            // Opções da tabela DataTable
         });
-      }
+    });
+  
+    // fetch all data using ajax request
+    function fetchAllEmployees() {
+        $.ajax({
+            url: '{{ route('fetchAll') }}',
+            method: 'get',
+            dataType: "json",
+            success: function (response) {
+              if (table) {
+                  table.destroy();
+              }
+                $('tbody').html("");
+                $.each(response.emps, function (key, item) {
+                    $('tbody').append(
+                        '<tr>\
+                            <td><input type="checkbox" name="emp[]" value="' + item.id + '"></td>\
+                            <td>'+ item.id +'</td>\
+                            <td>'+ item.first_name +' '+ item.last_name +'</td>\
+                            <td>'+ item.email +'</td>\
+                            <td>'+ item.post +'</td>\
+                            <td>'+ item.phone +'</td>\
+                            <td>\
+                                <a href="#" id="'+ item.id +'" class="editIcon" data-bs-toggle="modal" data-bs-target="#editEmployeeModal"><i class="bi-pencil-square h4"></i></a>\
+                                <a href="#" id="'+ item.id +'" class="text-danger mx-1 deleteIcon" ><i class="bi-trash h4"></i></a>\
+                            </td>\
+                        </tr>'
+                    );
+                });
+                table = $('.datatable').DataTable({
+                    order: [1, "desc"],
+                    paging: true,
+                    responsive: true
+                });
+              }
+        });
+    }
 
       // delete employee using ajax request
       $(document).on('click', '.deleteIcon', function(e) {
         e.preventDefault();
         let id = $(this).attr('id');
-
 
         Swal.fire({
           title: 'Are you sure?',
@@ -183,7 +231,6 @@
             })
           }
         });
-
       });
 
       // delete multiple data using ajax request
@@ -195,9 +242,19 @@
           $('input[name="emp[]"]').prop('checked', false);
         }
       });
-
        $(document).on('click', '#deleteSelected', function(e) {
         e.preventDefault();
+
+        // Check if any records are selected
+        if (!$('input[name="emp[]"]:checked').length) {
+          Swal.fire(
+            'Error!',
+            'Please select at least one record to delete.',
+            'error'
+          )
+          return;
+        }
+
         let ids = [];
        // iterate over selected checkboxes to get IDs of selected records
        $('input[name="emp[]"]:checked').each(function () {
@@ -226,6 +283,9 @@
                     'Your file has been deleted.',
                     'success'
                   ) 
+                  $('input[name="emp[]"]:checked').each(function() {
+                      $(this).prop('checked', false);
+                  });
                   fetchAllEmployees();
                 }
               })
